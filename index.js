@@ -3,9 +3,13 @@ const { scrapeLogic } = require("./scrapeLogic");
 const app = express();
 
 const PORT = process.env.PORT || 4000;
+app.use(express.json());
+app.use(express.urlencoded());
 
-app.get("/scrape", (req, res) => {
-  scrapeLogic(res);
+app.post("/scrape", (req, res) => {
+  console.log(req.body);
+  const{url}=req.body
+  scrapeLogic(res,url);
 });
 
 app.get("/", (req, res) => {

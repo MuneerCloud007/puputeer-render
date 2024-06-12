@@ -1,7 +1,23 @@
 const puppeteer = require("puppeteer");
 require("dotenv").config();
 
-const scrapeLogic = async (res) => {
+maxRetries=4;
+
+async function safeGoto(page, url, options, retries = 0) {
+  try {
+      await page.goto(url, options);
+  } catch (error) {
+      if (retries < maxRetries) {
+          console.log(`Retrying navigation to ${url} (${retries + 1}/${maxRetries})...`);
+          await safeGoto(page, url, options, retries + 1);
+      } else {
+          throw error;
+      }
+  }
+}
+
+
+const scrapeLogic = async (res,url1) => {
   const browser = await puppeteer.launch({
     args: [
       "--disable-setuid-sandbox",
@@ -17,35 +33,55 @@ const scrapeLogic = async (res) => {
   try {
     const page = await browser.newPage();
 
-    await page.goto("https://developer.chrome.com/");
+      console.log("Puputeer is launched")
+      await page.setViewport({ width: 800, height: 600 });
 
-    // Set screen size
-    await page.setViewport({ width: 1080, height: 1024 });
 
-    // Type into search box
-    await page.type(".search-box__input", "automate beyond recorder");
+      const cookie = {
+          name: 'li_at',
+          value: 'AQEFAQ8BAAAAAA_9W-EAAAGP8vkCmgAAAZAXBY8XVgAAsnVybjpsaTplbnRlcnByaXNlQXV0aFRva2VuOmVKeGpaQUFDbHFhTU15Q2EzWUJ0R29nV1ZQK3hrUkhFU09WY1hnaG1SSzV3ZFdGZ0JBQ2VrZ2VEXnVybjpsaTplbnRlcnByaXNlUHJvZmlsZToodXJuOmxpOmVudGVycHJpc2VBY2NvdW50Ojc1NjU1MzcyLDEyMDU4NzkyNiledXJuOmxpOm1lbWJlcjo4ODUyMTEzODVAEnM090WcGzcHVbH0PYjGOdpeaPYJKwGByL1txB_mYFDjIQgYGs7n7bcUB8ZQh5J_X2E5Kj3ObgRXCGYKMfTdoBEME8EdY8_JiJKewOv4IpQdJQuKaIwn9eWzkuLFFsoAibefSHN4cwqEFv3lyHn87NRMB9ZNyc0pUl00dB7P-oQNVlWOQBuZ2vel2E75b1jWAvaK',
+          domain: '.www.linkedin.com',
+          path: '/',
+          httpOnly: false,
+          secure: true
+      };
+      await page.setCookie(cookie);
+      await page.setExtraHTTPHeaders({
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Referer': 'https://www.linkedin.com/',
+      });
 
-    // Wait and click on first result
-    const searchResultSelector = ".search-box__link";
-    await page.waitForSelector(searchResultSelector);
-    await page.click(searchResultSelector);
+         
 
-    // Locate the full title with a unique string
-    const textSelector = await page.waitForSelector(
-      "text/Customize and automate"
-    );
-    const fullTitle = await textSelector.evaluate((el) => el.textContent);
+          
 
-    // Print the full title
-    const logStatement = `The title of this blog post is ${fullTitle}`;
-    console.log(logStatement);
-    res.send(logStatement);
-  } catch (e) {
-    console.error(e);
-    res.send(`Something went wrong while running Puppeteer: ${e}`);
-  } finally {
-    await browser.close();
-  }
+          await safeGoto(page,url1, {  waitUntil: 'networkidle2',  timeout: 20000000 });
+         
+
+          await page.waitForSelector('.account-top-card__account-actions', { timeout: 18000000 });
+          await new Promise(r => setTimeout(r, 4000));
+
+          const companyLink = await page.evaluate(() => {
+              const links = document.querySelector(".account-top-card__account-actions").children[0].children[3].href;
+              return { Link: links };
+          });
+
+          console.log(companyLink);
+      
+
+      console.log(`All done, check the screenshots. ✨`);
+
+    
+
+    res.send(companyLink);
+  } 
+  catch (error) {
+    console.log(error);
+    res.send(error);
+} finally {
+    console.log("I am in finally");
+    browser.close();
+}
 };
 
 module.exports = { scrapeLogic };
