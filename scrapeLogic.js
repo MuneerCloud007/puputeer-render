@@ -1,7 +1,8 @@
-const puppeteer = require("puppeteer");
-require("dotenv").config();
+import puppeteer from "puppeteer";
+import dotenv from "dotenv";
+dotenv.config();
 
-maxRetries=4;
+let maxRetries=4;
 
 async function safeGoto(page, url, options, retries = 0) {
   try {
@@ -84,4 +85,4 @@ const scrapeLogic = async (url1) => {
 }
 };
 
-module.exports = { scrapeLogic };
+export default scrapeLogic ;

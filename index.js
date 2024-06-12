@@ -1,15 +1,21 @@
-const express = require("express");
-const { scrapeLogic } = require("./scrapeLogic");
+import express from "express";
+import  scrapeLogic  from "./scrapeLogic.js";
+import wrapperFunEmailVerfier from "./emailVerification.js";
 const app = express();
 
 const PORT = process.env.PORT || 4000;
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 
 app.post("/scrape", async(req, res) => {
   console.log(req.body);
   const{url}=req.body
   const data=await scrapeLogic(url);
+  res.send(data);
+});
+app.post("/emailVerification", async(req, res) => {
+  const{firstName,lastName,domainName}=req.body
+  const data=await wrapperFunEmailVerfier(firstName,lastName,domainName);
   res.send(data);
 });
 
