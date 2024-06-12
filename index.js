@@ -15,8 +15,11 @@ app.post("/scrape", async(req, res) => {
 });
 app.post("/emailVerification", async(req, res) => {
   const{firstName,lastName,domainName}=req.body
+  console.log(`firstName=${firstName},lastName=${lastName},domainName=${domainName}`)
   const data=await wrapperFunEmailVerfier(firstName,lastName,domainName);
-  res.send(data);
+  res.send({
+    success:true,
+    data:data});
 });
 
 app.get("/", (req, res) => {
