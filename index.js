@@ -6,10 +6,11 @@ const PORT = process.env.PORT || 4000;
 app.use(express.json());
 app.use(express.urlencoded());
 
-app.post("/scrape", (req, res) => {
+app.post("/scrape", async(req, res) => {
   console.log(req.body);
   const{url}=req.body
-  scrapeLogic(res,url);
+  const data=await scrapeLogic(url);
+  res.send(data);
 });
 
 app.get("/", (req, res) => {

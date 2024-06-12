@@ -17,7 +17,7 @@ async function safeGoto(page, url, options, retries = 0) {
 }
 
 
-const scrapeLogic = async (res,url1) => {
+const scrapeLogic = async (url1) => {
   const browser = await puppeteer.launch({
     args: [
       "--disable-setuid-sandbox",
@@ -73,11 +73,11 @@ const scrapeLogic = async (res,url1) => {
 
     
 
-    res.send(companyLink);
+    return companyLink;
   } 
   catch (error) {
     console.log(error);
-    res.send(error);
+    return error;
 } finally {
     console.log("I am in finally");
     browser.close();
